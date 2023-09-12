@@ -9,6 +9,8 @@ SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 1100
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+# mainsound = pygame.mixer.Sound(os.path.join("Sound", "FunKid.mp3"))
+# mainsound.play(-1)
 
 # 이미지 상수 값으로 지정
 
@@ -23,39 +25,44 @@ book2 = pygame.image.load(os.path.join("Assets2","book3.png"))
 pencil0 = pygame.image.load(os.path.join("Assets2","pencil1.png"))
 pencil1 = pygame.image.load(os.path.join("Assets2","pencil2.png"))
 pencil2 = pygame.image.load(os.path.join("Assets2","pencil3.png"))
-
+bird0 = pygame.image.load(os.path.join("Assets2","paper.png"))
+bird1 =  pygame.image.load(os.path.join("Assets2","paper.png"))
 
 running0 = pygame.transform.scale(running0, (100, 100))
 
 running1= pygame.transform.scale(running1, (100, 100))
 
-jumping0= pygame.transform.scale(jumping0, (100, 100))
-ç
+jumping0= pygame.transform.scale(jumping0, (100, 100)) 
+
 ducking0 = pygame.transform.scale(ducking0, (100, 100))
 
 ducking1 = pygame.transform.scale(ducking1, (100, 100))
 
-book1 = pygame.transform.scale(book1, (100, 100))
+book1 = pygame.transform.scale(book1, (90, 100)) # 책 두권
 
-book2 = pygame.transform.scale(book2, (100, 100))
+book2 = pygame.transform.scale(book2, (70, 100)) # 문학 책 한권
 
-book0 = pygame.transform.scale(book0, (100, 100))
+book0 = pygame.transform.scale(book0, (50, 100)) # 얇은 책 한권
 
-pencil0 = pygame.transform.scale(pencil0, (100, 100))
+pencil0 = pygame.transform.scale(pencil0, (40, 100)) # 연필 한 자루
 
-pencil1 = pygame.transform.scale(pencil1, (100, 100))
+pencil1 = pygame.transform.scale(pencil1, (80, 100)) # 연필 두 자루
 
-pencil2 = pygame.transform.scale(pencil2, (100, 100))
+pencil2 = pygame.transform.scale(pencil2, (95, 100)) # 연필 세 자루
+
+bird0 = pygame.transform.scale(bird0, (100, 100))
+
+pygame.transform.scale(bird0, (100, 100))
 
 RUNNING = [running0, running1]
 JUMPING = jumping0
 DUCKING = [ducking0, ducking1]
 SMALL_CACTUS = [book0, book1, book2]
 LARGE_CACTUS = [pencil0, pencil1, pencil2]
-BG = pygame.image.load(os.path.join("Assets2", "background.png"))
+BIRD = [bird0, bird1]
+BG = pygame.image.load(os.path.join("Assets2", "newbk.png"))
 
 class Dinosaur():
-
     X_POS = 80
     Y_POS = 310
     Y_POS_DUCK = 340 # dino가 덕킹했을 때 y 값이 더 작아지므로 피격 범위 재설정을 위함
@@ -160,7 +167,7 @@ class Bird(Obstacle):
     def __init__(self, image):
         self.type = 0
         super().__init__(image, self.type)
-        self.rect.y = 250
+        self.rect.y = 215
         self.index = 0
 
     def draw(self, SCREEN):
@@ -174,12 +181,11 @@ def main():
     global game_speed, x_pos_bg, y_pos_bg, points, obstacles # 전역 변수 설정
     run = True
     clock = pygame.time.Clock()
-
     player = Dinosaur()
     game_speed = 14
     points = 0
-    x_pos_bg = 500
-    y_pos_bg = 380
+    x_pos_bg = 0
+    y_pos_bg = 150
     font = pygame.font.Font('freesansbold.ttf', 20)
     obstacles = []
     death_count = 0
@@ -187,9 +193,14 @@ def main():
     def score():
         global points, game_speed
         points += 1
-        if points % 100 == 0: # 100 단위 당 game_speed를 1씩 올림
-            game_speed += 1
-        
+        if 0 < points < 2500:
+            if points % 100 == 0:
+                game_speed += 1
+        else:
+            game_speed == 30
+
+    
+
         text = font.render("points: " + str(points), True, (0,0,0))
         textRect = text.get_rect() # text의 rect 위치 가져오기
         textRect.center = (1000,40) # 점수판 위치 설정
@@ -210,36 +221,40 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
         SCREEN.fill((255, 255, 255))
+        background()
         userInput = pygame.key.get_pressed() # 사용자가 누른 키 저장
 
         player.draw(SCREEN)
         player.update(userInput) # 사용자가 키를 누를 때마다 Dinosaur update에 반영
 
+        # 장애물 표시 관련
         if len(obstacles) == 0: # 리스트를 클래스에 넣는 과정
-            if random.randint(0,2) == 0:
+            if random.randint(0,5) == 0:
                 obstacles.append(SmallCactus(SMALL_CACTUS)) 
-            elif random.randint(0,2) == 1:
+            elif random.randint(0,5) == 1:
                 obstacles.append(LargeCactus(LARGE_CACTUS))
-            # elif random.randint(0,2) == 2:
-            #     obstacles.append(Bird(BIRD))
+            elif random.randint(0,5) == 2:
+                obstacles.append(Bird(BIRD))
+            else:
+                continue
+                
 
         for Obstacle in obstacles: # 리스트 요소를 반복
             Obstacle.draw(SCREEN)
             Obstacle.update()
             if player.dino_rect.colliderect(Obstacle.rect):
-                pygame.time.delay(2000)
+                pygame.time.delay(500)
                 death_count += 1
+                # mainsound.stop()
                 menu(death_count)
-
-        background()
 
         score()
 
         clock.tick(30) # 1초당 30번 화면에 업뎃 (주사율 설정)
         pygame.display.update()
-
+    
 def menu(death_count): # 게임 오버시 뜨는 메뉴 화면 구현
-    global points
+    global points 
     run = True
     while run:
         SCREEN.fill((255, 255, 255)) 
@@ -257,12 +272,14 @@ def menu(death_count): # 게임 오버시 뜨는 메뉴 화면 구현
         textRect = text.get_rect()
         textRect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
         SCREEN.blit(text, textRect)
-        SCREEN.blit(running0, (SCREEN_WIDTH//2-20, SCREEN_HEIGHT//2 - 140)) # 시작 시 공룡 이미지
+        SCREEN.blit(running0, (SCREEN_WIDTH//2-40, SCREEN_HEIGHT//2-140)) # 시작 시 공룡 이미지
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # 종료 버튼 누를 시 프로그램 종료
                 run = False
             if event.type == pygame.KEYDOWN:
                 main()
+            # effectsound1 = pygame.mixer.Sound(os.path.join("Sound", "jump.mp3"))
+            # pygame.mixer.Sound.play(effectsound1)
 
 menu(death_count=0)

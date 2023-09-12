@@ -203,6 +203,7 @@ def main():
         player.draw(SCREEN)
         player.update(userInput) # 사용자가 키를 누를 때마다 Dinosaur update에 반영
 
+    # 장애물 표시 리스트
         if len(obstacles) == 0: # 리스트를 클래스에 넣는 과정
             if random.randint(0,2) == 0:
                 obstacles.append(SmallCactus(SMALL_CACTUS)) 
